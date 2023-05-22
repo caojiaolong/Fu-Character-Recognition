@@ -2,6 +2,12 @@
 
 This repository is used to store our ML final homework, a model to identify Fu character. 
 
+## 安装需求
+
+由于使用了专利保护的surf算法提取特征，需要使用下列命令安装包opencv-contrib-python：
+
+`CMAKE_ARGS="-DOPENCV_ENABLE_NONFREE=ON" pip install --no-binary=opencv-contrib-python opencv-contrib-python`
+
 ## 分工
 
 1. 数据采集：负责从各个来源（如网络、字体库等）收集不同字体的福字样本。由一个人负责。

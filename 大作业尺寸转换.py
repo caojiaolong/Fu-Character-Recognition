@@ -10,5 +10,5 @@ def convertjpg(filename,outdir,width=500,height=500):		#尺寸转换
     except Exception as e:
         print(e)
 
-for filename in glob2.glob('D:/notfu/*.png'):
-    convertjpg(filename,'D:/notfu')
+for filename in glob2.glob('test.png'):
+    convertjpg(filename,'./')

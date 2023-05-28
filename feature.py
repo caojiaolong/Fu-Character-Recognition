@@ -6,19 +6,20 @@ import numpy as np
 from PIL import Image
 from skimage import morphology
 
-def feature(p_path, method='sift', show=True,x_start=0,y_start=0,x_end=500,y_end=500):
+def feature(p_path, method='sift', show=True,x_start=0,y_start=0,x_end=500,y_end=500,skeleton=False):
     img = cv2.imread(p_path,cv2.IMREAD_GRAYSCALE)
 
     ret,img=cv2.threshold(img, 127, 255, cv2.THRESH_BINARY)
-    img=255-img
+    if skeleton:
+        img=255-img
 
-    #实施骨架算法
-    skeleton =morphology.skeletonize(img)
+        #实施骨架算法
+        skeleton =morphology.skeletonize(img)
 
-    skeleton=255-skeleton
-    img=255-img
-    skeleton[skeleton!=255]=0
-    img=skeleton.astype(np.uint8)
+        skeleton=255-skeleton
+        img=255-img
+        skeleton[skeleton!=255]=0
+        img=skeleton.astype(np.uint8)
 
     img = img[x_start:x_end,y_start:y_end]
     if method == 'sift':
@@ -203,14 +204,43 @@ def feature(p_path, method='sift', show=True,x_start=0,y_start=0,x_end=500,y_end
         return hog_descriptor_reshaped
 
 
-def match(path1, path2, method='sift', p=2, r=0.85, show=True):
+def match(path1, path2, method='sift', p=2, r=0.85, show=True,skeletoned=False):
     good_match = []
-    img1 = cv2.imread(path1)
-    img2 = cv2.imread(path2)
-    kp1, des1 = feature(path1, method, show)
-    kp2, des2 = feature(path2, method, show)
+    img1 = cv2.imread(path1,cv2.IMREAD_GRAYSCALE)
+    img2 = cv2.imread(path2,cv2.IMREAD_GRAYSCALE)
+
+
+    ret,img1=cv2.threshold(img1, 127, 255, cv2.THRESH_BINARY)
+    ret,img2=cv2.threshold(img2, 127, 255, cv2.THRESH_BINARY)
+    if skeletoned:
+        img1=255-img1
+
+        #实施骨架算法
+        skeleton =morphology.skeletonize(img1)
+
+        skeleton=255-skeleton
+        img1=255-img1
+        skeleton[skeleton!=255]=0
+        img1=skeleton.astype(np.uint8)
+        img2=255-img2
+
+        #实施骨架算法
+        skeleton =morphology.skeletonize(img2)
+
+        skeleton=255-skeleton
+        img2=255-img2
+        skeleton[skeleton!=255]=0
+        img2=skeleton.astype(np.uint8)
+
+    img1=img1.astype(np.uint8)
+    img2=img2.astype(np.uint8)
+    kp1, des1 = feature(path1, method, show,skeleton=skeletoned)
+    kp2, des2 = feature(path2, method, show,skeleton=skeletoned)
     bf = cv2.BFMatcher()
     matches = bf.knnMatch(des1, des2, k=p)
+    for i in matches:
+        if len(i)<2:
+            return 0
     for m1, m2 in matches:
         if m1.distance < r * m2.distance:
             good_match.append([m1])
